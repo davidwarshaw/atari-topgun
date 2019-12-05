@@ -3,8 +3,9 @@ import 'phaser';
 import properties from './properties';
 
 import BootScene from './scenes/BootScene';
-import GameScene from './scenes/GameScene';
 import TitleScene from './scenes/TitleScene';
+import GameScene from './scenes/GameScene';
+import WinScene from './scenes/WinScene';
 
 console.log(Phaser);
 
@@ -26,6 +27,7 @@ const config = {
         BootScene,
         TitleScene,
         GameScene,
+        WinScene,
     ],
 };
 

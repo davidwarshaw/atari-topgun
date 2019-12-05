@@ -4,6 +4,11 @@ export default class PlaneModel {
 
     this.tickFraction = 0.1;
 
+    this.takenOff = false;
+    this.landed = false;
+    this.crashed = false;
+    this.isOverCarrier = true;
+
     this.maxAirSpeed = 1200;
     this.minAirSpeed = 0;
     this.maxY = 30000;
@@ -17,17 +22,17 @@ export default class PlaneModel {
       min: 0,
       max: 100,
       unit: 5,
-      value: 50,
+      value: 0,
     };
     this.stick = {
       min: -100,
       max: 100,
       unit: 10,
-      value: -50,
+      value: 0,
     };
 
-    this.velocity = new Phaser.Math.Vector2(100, 0);
-    this.position = new Phaser.Math.Vector2(0, 100);
+    this.velocity = new Phaser.Math.Vector2(0, 0);
+    this.position = new Phaser.Math.Vector2(0, 0);
   }
 
   update(delta) {
@@ -35,10 +40,13 @@ export default class PlaneModel {
 
     const tickDelta = delta * this.tickFraction;
 
-    const { mass, dragCoefficient, thrustCoefficient } = this.config;
+    const { mass, liftCoefficient, dragCoefficient, thrustCoefficient } = this.config;
 
     const massVector = new Phaser.Math.Vector2(mass, mass);
     console.log(`massVector: ${massVector.x}, ${massVector.y}`);
+
+    const liftVector = new Phaser.Math.Vector2(liftCoefficient, liftCoefficient);
+    console.log(`liftVector: ${liftVector.x}, ${liftVector.y}`);
 
     const dragVector = new Phaser.Math.Vector2(dragCoefficient, dragCoefficient);
     console.log(`dragVector: ${dragVector.x}, ${dragVector.y}`);
@@ -54,10 +62,13 @@ export default class PlaneModel {
     const thrust = new Phaser.Math.Vector2(0, 0).setToPolar(angleOfAttack, power).divide(massVector);
     console.log(`thrust: ${thrust.x}, ${thrust.y}`);
 
+    const lift = this.calculateLift(liftVector);
+    console.log(`lift: ${lift.x}, ${lift.y}`);
+
     const drag = this.calculateDrag(dragVector);
     console.log(`drag: ${drag.x}, ${drag.y}`);
 
-    const acceleration = gravity.add(thrust).add(drag);
+    const acceleration = gravity.add(thrust).add(lift).add(drag);
     console.log(`acceleration: ${acceleration.x}, ${acceleration.y}`);
 
     //acceleration.setTo(Phaser.Math.RoundTo(acceleration.x, 1), Phaser.Math.RoundTo(acceleration.y, 1));
@@ -92,11 +103,19 @@ export default class PlaneModel {
       this.velocity.setTo(0, 0);
     }
     console.log(`this.position: ${this.position.x}, ${this.position.y}`);
+
+    // Take off
+    console.log(`takenOff: ${this.takenOff}`);
+    if (!this.takenOff && this.position.y >= 500) {
+      this.takenOff = true;
+    }
+
+    this.checkLanding();
   }
 
-  calculateLift() {
-    const { maxLift } = this.config;
-    return maxLift * this.angleOfAttackFromStick() * this.velocity.length()^2;
+  calculateLift(liftVector) {
+    const scaledliftVector = this.velocity.clone().multiply(liftVector);
+    return scaledliftVector.setToPolar(scaledliftVector.angle() + (Math.PI / 2), scaledliftVector.length());
   }
 
   calculateDrag(dragVector) {
@@ -112,6 +131,29 @@ export default class PlaneModel {
   powerFromThrottle(thrustCoefficient) {
     const percent = 1 - ((this.throttle.max - Math.abs(this.throttle.value)) / (this.throttle.max));
     return percent * thrustCoefficient;
+  }
+
+  checkLanding() {
+    console.log('checkLanding()');
+    // Able to land
+    console.log(`isOverCarrier: ${this.isOverCarrier}`);
+    if (this.takenOff && this.position.y <= 1000 && this.isOverCarrier) {
+      if (Math.abs(this.velocity.y) <= 50 && Math.abs(this.velocity.x) <= 200) {
+        console.log('Landed!!!');
+        this.landed = true;
+      }
+      else {
+        console.log('Crashed!!!');
+        this.crashed = true;
+      }
+    }
+    else if (this.takenOff && this.position.y <= 10) {
+      this.crashed = true;
+    }
+  }
+
+  setIsOverCarrier(value) {
+    this.isOverCarrier = value;
   }
 
   screenFractionFromPosition() {

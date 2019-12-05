@@ -11,7 +11,7 @@ export default class Hud {
   update(delta, planeModel) {
 
     const throttleValue = planeModel.throttle.value.toString().padStart(3, '0');
-    this.font.render(1, 0, `throttle: ${throttleValue}%`);
+    this.font.render(24, 0, `throttle: ${throttleValue}%`);
 
     let sign = ' ';
     if (planeModel.stick.value > 0) {
@@ -21,12 +21,12 @@ export default class Hud {
       sign = '-';
     }
     const stickValue = Math.abs(planeModel.stick.value).toString().padStart(3, '0');
-    this.font.render(1, 8, `stick:   ${sign}${stickValue}%`);
+    this.font.render(24, 8, `stick:   ${sign}${stickValue}%`);
 
     const airspeed = Phaser.Math.RoundTo(planeModel.velocity.length(), 1).toString().padStart(5, '0');
-    this.font.render(140, 0, `airspeed: ${airspeed}kn`);
+    this.font.render(156, 0, `airspeed: ${airspeed}kn`);
 
     const altitude = Phaser.Math.RoundTo(planeModel.position.y, 2).toString().padStart(5, '0');
-    this.font.render(140, 8, `altitude: ${altitude}ft`);
+    this.font.render(156, 8, `altitude: ${altitude}ft`);
   }
 }

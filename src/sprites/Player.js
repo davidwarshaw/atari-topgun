@@ -11,7 +11,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
     this.keys = scene.input.keyboard.addKeys(properties.playerKeys);
   }
 
-  update(delta) {
+  update(delta, background) {
     if (this.keys.up.isDown) {
       this.planeModel.increaseThrottle();
     }
@@ -27,11 +27,14 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
     console.log('this.planeModel.screenFractionFromVelocity()');
     console.log(this.planeModel.screenFractionFromVelocity());
-    this.setX(((properties.width - 200) * this.planeModel.screenFractionFromVelocity()) + 100);
-    this.setY(((192 - 20) * this.planeModel.screenFractionFromPosition()) + 20);
-
-    console.log(this.x);
-    console.log(this.y);
+    if (this.planeModel.takenOff && !this.planeModel.landed) {
+      this.setX(((properties.width - 200) * this.planeModel.screenFractionFromVelocity()) + 100);
+      this.setY(((192 - 20) * this.planeModel.screenFractionFromPosition()) + 20);
+    }
+    else {
+      this.setX(background.carrier.x + 10);
+      this.setY(background.carrier.y + 4);
+    }
 
     this.updateAnimation();
   }
